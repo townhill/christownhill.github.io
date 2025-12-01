@@ -10,11 +10,7 @@
   
   <!-- KaTeX JS -->
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-          onload="renderMathInElement(document.body);"
-          integrity=""
-          crossorigin="anonymous">
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -828,6 +824,19 @@
     // --- Icons ---
     lucide.createIcons();
 
+    // --- Math Rendering (Fix) ---
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+        ],
+        throwOnError : false
+      });
+    });
+
     // --- Theme Logic ---
     const themeBtn = document.getElementById('theme-btn');
     const themeText = document.getElementById('theme-text');
@@ -865,13 +874,9 @@
 
     mobileMenuBtn.addEventListener('click', () => {
       sidebar.classList.toggle('open');
-      
-      // Update icon based on state (optional visual polish)
       const icon = sidebar.classList.contains('open') ? 'x' : 'menu';
-      // Re-render icon if needed or just toggle class
     });
 
-    // Close sidebar when clicking a link on mobile
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', () => {
         if (window.innerWidth <= 900) {
@@ -888,7 +893,6 @@
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const id = entry.target.getAttribute('id');
-          
           navLinks.forEach(link => {
             link.classList.remove('active');
             if (link.getAttribute('href') === `#${id}`) {
@@ -898,7 +902,7 @@
         }
       });
     }, {
-      rootMargin: '-20% 0px -60% 0px' // Trigger when section is near top
+      rootMargin: '-20% 0px -60% 0px'
     });
 
     sections.forEach(section => observer.observe(section));

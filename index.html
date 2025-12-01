@@ -5,20 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PolyMV: Multivariate Polynomials in Bronstein-Laurent</title>
   
+  <!-- KaTeX CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  <!-- KaTeX JS -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
           onload="renderMathInElement(document.body);"
           integrity=""
           crossorigin="anonymous">
   </script>
   
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
     /* --- CSS Variables & Theming --- */
     :root {
       /* Dark Theme (Default) */
       --bg-body: #0f172a;       /* Slate 900 */
+      --bg-sidebar: #1e293b;    /* Slate 800 */
       --bg-card: #1e293b;       /* Slate 800 */
       --bg-code: #020617;       /* Slate 950 */
       --text-main: #e2e8f0;     /* Slate 200 */
@@ -34,11 +40,13 @@
       --accent-blue-border: #38bdf8;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
       --code-font: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --nav-width: 280px;
     }
 
     /* Light Theme Override */
     [data-theme="light"] {
       --bg-body: #f8fafc;       /* Slate 50 */
+      --bg-sidebar: #ffffff;    /* White */
       --bg-card: #ffffff;       /* White */
       --bg-code: #f1f5f9;       /* Slate 100 */
       --text-main: #334155;     /* Slate 700 */
@@ -58,6 +66,10 @@
     /* --- Base Styles --- */
     * { box-sizing: border-box; }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       line-height: 1.7;
@@ -66,20 +78,113 @@
       margin: 0;
       padding: 0;
       transition: background-color 0.3s ease, color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
-    .container {
-      max-width: 900px;
+    /* --- Layout --- */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+
+    /* --- Sidebar Navigation --- */
+    .sidebar {
+      width: var(--nav-width);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 2rem 1.5rem;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+      z-index: 50;
+    }
+
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-item {
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.5rem 0.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text-main);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    [data-theme="light"] .nav-link:hover {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .nav-link.active {
+      color: var(--primary);
+      background: var(--accent-blue-bg);
+      font-weight: 600;
+    }
+
+    /* --- Main Content --- */
+    .main-content {
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 1000px; /* Constrain width for readability */
       margin: 0 auto;
-      padding: 2rem 1.5rem 4rem 1.5rem;
+      width: 100%;
+    }
+
+    /* --- Mobile Menu Toggle --- */
+    .mobile-header {
+      display: none;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      cursor: pointer;
+      padding: 0.5rem;
     }
 
     /* --- Typography --- */
     h1, h2, h3 {
       font-weight: 700;
       letter-spacing: -0.025em;
-      margin-top: 2.5rem;
-      margin-bottom: 1rem;
+      scroll-margin-top: 2rem; /* Spacing for sticky headers/scroll */
     }
 
     h1 {
@@ -87,7 +192,8 @@
       color: var(--primary);
       border-bottom: 2px solid var(--border);
       padding-bottom: 1rem;
-      margin-top: 1rem;
+      margin-top: 0;
+      margin-bottom: 2rem;
     }
 
     h2 {
@@ -95,6 +201,7 @@
       color: var(--text-main);
       border-bottom: 1px solid var(--border);
       padding-bottom: 0.5rem;
+      margin-top: 3rem;
     }
 
     h3 {
@@ -105,13 +212,17 @@
 
     p { margin-bottom: 1.25rem; }
 
-    a {
+    a.content-link {
       color: var(--primary);
       text-decoration: none;
       font-weight: 500;
       transition: color 0.2s;
+      border-bottom: 1px dashed transparent;
     }
-    a:hover { color: var(--primary-hover); }
+    a.content-link:hover { 
+      color: var(--primary-hover);
+      border-bottom-color: var(--primary-hover);
+    }
 
     /* --- Code & Pre --- */
     code {
@@ -211,7 +322,7 @@
     tr:last-child td { border-bottom: none; }
     
     tr:nth-child(even) {
-      background-color: rgba(0,0,0,0.02); /* Very subtle stripe */
+      background-color: rgba(0,0,0,0.02);
     }
 
     /* --- Math --- */
@@ -225,285 +336,391 @@
       border: 1px solid var(--border);
     }
     
-    /* Ensure KaTeX isn't black in dark mode */
     .katex { font-size: 1.1em !important; }
     .katex-display { color: var(--text-main); }
 
-    /* --- Toggle Switch --- */
-    .theme-toggle-wrapper {
-      position: absolute;
-      top: 1.5rem;
-      right: 1.5rem;
-      display: flex;
-      align-items: center;
+    /* --- Footer --- */
+    .main-footer {
+      background: var(--bg-sidebar);
+      border-top: 1px solid var(--border);
+      padding: 3rem 1.5rem;
+      margin-top: auto;
     }
 
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+
+    .footer-col h4 {
+      color: var(--primary);
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-col li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--text-main);
+    }
+
+    .copyright {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* --- Toggle Switch --- */
     .theme-toggle {
       background: transparent;
-      border: 2px solid var(--border);
+      border: 1px solid var(--border);
       color: var(--text-muted);
       cursor: pointer;
       padding: 0.5rem;
-      border-radius: 50%;
+      border-radius: 6px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      margin-top: auto; /* Push to bottom of sidebar if needed */
       transition: all 0.2s;
     }
-
+    
     .theme-toggle:hover {
-      color: var(--primary);
-      border-color: var(--primary);
       background: var(--bg-card);
+      color: var(--text-main);
     }
 
-    /* Icons */
-    .icon-sun, .icon-moon { width: 20px; height: 20px; stroke-width: 2; }
+    .icon-sun, .icon-moon { width: 18px; height: 18px; }
     [data-theme="light"] .icon-sun { display: none; }
     [data-theme="light"] .icon-moon { display: block; }
     :root:not([data-theme="light"]) .icon-moon { display: none; }
     :root:not([data-theme="light"]) .icon-sun { display: block; }
 
-    /* --- Utility --- */
-    hr {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 3rem 0;
-    }
+    /* --- Mobile Responsiveness --- */
+    @media (max-width: 900px) {
+      .app-layout {
+        flex-direction: column;
+      }
+      
+      .mobile-header {
+        display: flex;
+      }
 
-    .footer {
-      color: var(--text-muted);
-      font-size: 0.9em;
-      text-align: center;
-    }
-    
-    /* Mobile tweaks */
-    @media (max-width: 600px) {
+      .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 60px; /* Below mobile header */
+        height: calc(100vh - 60px);
+        width: 100%;
+        z-index: 55;
+        border-right: none;
+        padding-top: 1rem;
+      }
+
+      .sidebar.open {
+        transform: translateX(100%);
+      }
+
+      .main-content {
+        padding: 1.5rem;
+      }
+      
       h1 { font-size: 2rem; }
-      .container { padding: 1rem; }
-      .theme-toggle-wrapper { position: static; justify-content: flex-end; margin-bottom: 1rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="theme-toggle-wrapper">
-      <button class="theme-toggle" id="theme-btn" aria-label="Toggle Dark Mode">
-        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-      </button>
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <div class="brand">
+      <i data-lucide="package"></i>
+      PolyMV Docs
     </div>
+    <button class="menu-btn" id="mobile-menu-btn" aria-label="Toggle Menu">
+      <i data-lucide="menu"></i>
+    </button>
+  </header>
 
-    <h1>PolyMV: Multivariate Polynomial Representation</h1>
-    
-    <p>
-      The <code>PolyMV</code> (Polynomial Multivariate) type is the foundational data structure 
-      in the Bronstein-Laurent symbolic integration library. It represents multivariate polynomials 
-      in a <strong>recursive, canonical form</strong> that enables efficient symbolic computation.
-    </p>
-    
-    <h2>Core Concept</h2>
-    
-    <p>
-      A multivariate polynomial like \( P(x, y, z) = x^2 + 3xy + y^2 + 2z \) is represented 
-      recursively by treating one variable as the "main" variable and the others as coefficients. 
-      For example, viewing \( P \) as a polynomial in \( x \) with coefficients in \( y \) and \( z \):
-    </p>
-    
-    <div class="math-display">
-      \[ P(x, y, z) = (1) \cdot x^2 + (3y) \cdot x^1 + (y^2 + 2z) \cdot x^0 \]
-    </div>
-    
-    <p>
-      The coefficients themselves (like \( 3y \) and \( y^2 + 2z \)) are also <code>PolyMV</code> 
-      polynomials, creating a recursive structure.
-    </p>
-    
-    <h2>Data Structure</h2>
-    
-    <div class="structure">
-      <h3>PolyMV Structure</h3>
-      <pre><code>type PolyMV struct {
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand" style="display: var(--desktop-brand-display, flex)">
+        <i data-lucide="package"></i>
+        <span>PolyMV Docs</span>
+      </div>
+
+      <nav>
+        <ul class="nav-list">
+          <li class="nav-item"><a href="#intro" class="nav-link active">Introduction</a></li>
+          <li class="nav-item"><a href="#core-concept" class="nav-link">Core Concept</a></li>
+          <li class="nav-item"><a href="#data-structure" class="nav-link">Data Structure</a></li>
+          <li class="nav-item"><a href="#invariants" class="nav-link">Invariants</a></li>
+          <li class="nav-item"><a href="#examples" class="nav-link">Examples</a></li>
+          <li class="nav-item"><a href="#constructors" class="nav-link">Constructors</a></li>
+          <li class="nav-item"><a href="#recursive-nature" class="nav-link">Recursive Nature</a></li>
+          <li class="nav-item"><a href="#design" class="nav-link">Design Rationale</a></li>
+          <li class="nav-item"><a href="#operations" class="nav-link">Key Operations</a></li>
+          <li class="nav-item"><a href="#integration" class="nav-link">Symbolic Integration</a></li>
+        </ul>
+      </nav>
+
+      <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+      <button class="theme-toggle" id="theme-btn">
+        <i data-lucide="sun" class="icon-sun"></i>
+        <i data-lucide="moon" class="icon-moon"></i>
+        <span id="theme-text">Switch Theme</span>
+      </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <section id="intro">
+        <h1>PolyMV: Multivariate Polynomial Representation</h1>
+        
+        <p>
+          The <code>PolyMV</code> (Polynomial Multivariate) type is the foundational data structure 
+          in the Bronstein-Laurent symbolic integration library. It represents multivariate polynomials 
+          in a <strong>recursive, canonical form</strong> that enables efficient symbolic computation.
+        </p>
+      </section>
+      
+      <section id="core-concept">
+        <h2>Core Concept</h2>
+        
+        <p>
+          A multivariate polynomial like \( P(x, y, z) = x^2 + 3xy + y^2 + 2z \) is represented 
+          recursively by treating one variable as the "main" variable and the others as coefficients. 
+          For example, viewing \( P \) as a polynomial in \( x \) with coefficients in \( y \) and \( z \):
+        </p>
+        
+        <div class="math-display">
+          \[ P(x, y, z) = (1) \cdot x^2 + (3y) \cdot x^1 + (y^2 + 2z) \cdot x^0 \]
+        </div>
+        
+        <p>
+          The coefficients themselves (like \( 3y \) and \( y^2 + 2z \)) are also <code>PolyMV</code> 
+          polynomials, creating a recursive structure.
+        </p>
+      </section>
+      
+      <section id="data-structure">
+        <h2>Data Structure</h2>
+        
+        <div class="structure">
+          <h3>PolyMV Structure</h3>
+          <pre><code>type PolyMV struct {
     Var   string   // Main variable (e.g., "x"); empty for constants
     Head  *TermMV  // Linked list of terms (nil for constants)
     Const *big.Rat // Constant term (if Var == "")
 }</code></pre>
-      
-      <h3>TermMV Structure</h3>
-      <pre><code>type TermMV struct {
+          
+          <h3>TermMV Structure</h3>
+          <pre><code>type TermMV struct {
     Coeff *PolyMV // Coefficient (another PolyMV!)
     Exp   int     // Exponent of the main variable
     Next  *TermMV // Next term in the linked list
 }</code></pre>
-    </div>
-    
-    <h2>Canonical Invariants</h2>
-    
-    <div class="invariant">
-      <p style="margin-top:0"><strong>Critical Invariants:</strong></p>
-      <ul>
-        <li><strong>Canonical Zero:</strong> <code>Var == ""</code>, <code>Head == nil</code>, <code>Const == nil</code></li>
-        <li><strong>Constant:</strong> <code>Var == ""</code>, <code>Head == nil</code>, <code>Const != nil</code></li>
-        <li><strong>Non-constant:</strong> <code>Var != ""</code>, <code>Const == nil</code>, <code>Head != nil</code></li>
-        <li><strong>Sorted Terms:</strong> Terms in <code>Head</code> are sorted by exponent in <strong>descending</strong> order</li>
-        <li><strong>No Zero Coefficients:</strong> No term has a zero coefficient</li>
-        <li><strong>No Duplicate Exponents:</strong> Each exponent appears at most once</li>
-      </ul>
-    </div>
-    
-    <h2>Examples</h2>
-    
-    <h3>Example 1: Simple Univariate Polynomial</h3>
-    
-    <p>Consider the polynomial \( P(x) = 3x^2 + 2x + 5 \):</p>
-    
-    <div class="example-box">
-      <p><strong>Representation:</strong></p>
-      <ul>
-        <li><code>Var = "x"</code></li>
-        <li><code>Head</code> points to a linked list:
-          <ul>
-            <li>Term 1: <code>Coeff = 3</code> (constant PolyMV), <code>Exp = 2</code></li>
-            <li>Term 2: <code>Coeff = 2</code> (constant PolyMV), <code>Exp = 1</code></li>
-          </ul>
-        </li>
-        <li><code>Const = nil</code> (non-constant polynomial)</li>
-      </ul>
-      <p><strong>Note:</strong> The constant term \( 5 \) would be stored in the last term's <code>Next</code> 
-      with <code>Exp = 0</code>, or handled specially depending on the implementation.</p>
-    </div>
-    
-    <h3>Example 2: Bivariate Polynomial</h3>
-    
-    <p>Consider \( P(x, y) = x^2 + 3xy + y^2 \):</p>
-    
-    <div class="math-display">
-      \[ P(x, y) = (1) \cdot x^2 + (3y) \cdot x^1 + (y^2) \cdot x^0 \]
-    </div>
-    
-    <div class="example-box">
-      <p><strong>Representation (viewed as polynomial in \( x \)):</strong></p>
-      <ul>
-        <li><code>Var = "x"</code></li>
-        <li><code>Head</code> contains:
-          <ul>
-            <li>Term 1: <code>Coeff = 1</code> (constant), <code>Exp = 2</code></li>
-            <li>Term 2: <code>Coeff = 3y</code> (PolyMV with <code>Var = "y"</code>), <code>Exp = 1</code></li>
-            <li>Term 3: <code>Coeff = y^2</code> (PolyMV with <code>Var = "y"</code>), <code>Exp = 0</code></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    
-    <h3>Example 3: Three Variables</h3>
-    
-    <p>Consider \( P(x, y, z) = x^2y + 3xz + 2yz \):</p>
-    
-    <div class="math-display">
-      \[ P(x, y, z) = (y) \cdot x^2 + (3z) \cdot x^1 + (2yz) \cdot x^0 \]
-    </div>
-    
-    <div class="example-box">
-      <p><strong>Representation (viewed as polynomial in \( x \)):</strong></p>
-      <ul>
-        <li><code>Var = "x"</code></li>
-        <li><code>Head</code> contains:
-          <ul>
-            <li>Term 1: <code>Coeff = y</code> (PolyMV: <code>Var = "y"</code>, <code>Head.Exp = 1</code>), <code>Exp = 2</code></li>
-            <li>Term 2: <code>Coeff = 3z</code> (PolyMV: <code>Var = "z"</code>, coefficient 3), <code>Exp = 1</code></li>
-            <li>Term 3: <code>Coeff = 2yz</code> (PolyMV in \( y \) and \( z \)), <code>Exp = 0</code></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    
-    <h2>Constructors</h2>
-    
-    <table>
-      <thead>
-        <tr>
-          <th>Function</th>
-          <th>Description</th>
-          <th>Example</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>NewPolyZero()</code></td>
-          <td>Returns the canonical zero polynomial</td>
-          <td>\( 0 \)</td>
-        </tr>
-        <tr>
-          <td><code>NewPolyConst(r)</code></td>
-          <td>Creates a constant polynomial from a rational number</td>
-          <td>\( 5 \) or \( \frac{3}{2} \)</td>
-        </tr>
-        <tr>
-          <td><code>NewPolyVar(v)</code></td>
-          <td>Creates the polynomial \( v \) (i.e., \( 1 \cdot v^1 \))</td>
-          <td>\( x \)</td>
-        </tr>
-      </tbody>
-    </table>
-    
-    <h2>Recursive Nature</h2>
-    
-    <p>
-      The power of <code>PolyMV</code> lies in its recursive structure. Each coefficient 
-      in a term is itself a <code>PolyMV</code>, which can be:
-    </p>
-    
-    <ul>
-      <li>A constant (rational number)</li>
-      <li>A polynomial in another variable</li>
-      <li>A polynomial in multiple variables (nested recursively)</li>
-    </ul>
-    
-    <div class="example-box">
-      <p><strong>Example: Nested Structure</strong></p>
-      <p>For \( P(x, y, z) = x^2(y^2 + z) + x(yz) + z^2 \):</p>
-      <ul>
-        <li>Main variable: <code>"x"</code></li>
-        <li>Term \( x^2 \): coefficient is \( y^2 + z \) (a PolyMV in \( y \) and \( z \))</li>
-        <li>Term \( x^1 \): coefficient is \( yz \) (a PolyMV in \( y \) and \( z \))</li>
-        <li>Term \( x^0 \): coefficient is \( z^2 \) (a PolyMV in \( z \))</li>
-      </ul>
-    </div>
-    
-    <h2>Why This Design?</h2>
-    
-    <div class="card">
-      <h3>1. Canonical Form</h3>
-      <p>
-        The invariants ensure that every polynomial has a unique representation. 
-        This makes equality testing efficient and prevents redundant computations.
-      </p>
+        </div>
+      </section>
       
-      <h3>2. Efficient Operations</h3>
-      <p>
-        The recursive structure allows algorithms to work on one variable at a time, 
-        reducing multivariate problems to univariate ones. For example:
-      </p>
-      <ul>
-        <li>Addition: Add coefficients term-by-term</li>
-        <li>Multiplication: Use the distributive law recursively</li>
-        <li>GCD: Use the Euclidean algorithm on the main variable</li>
-      </ul>
+      <section id="invariants">
+        <h2>Canonical Invariants</h2>
+        
+        <div class="invariant">
+          <p style="margin-top:0"><strong>Critical Invariants:</strong></p>
+          <ul>
+            <li><strong>Canonical Zero:</strong> <code>Var == ""</code>, <code>Head == nil</code>, <code>Const == nil</code></li>
+            <li><strong>Constant:</strong> <code>Var == ""</code>, <code>Head == nil</code>, <code>Const != nil</code></li>
+            <li><strong>Non-constant:</strong> <code>Var != ""</code>, <code>Const == nil</code>, <code>Head != nil</code></li>
+            <li><strong>Sorted Terms:</strong> Terms in <code>Head</code> are sorted by exponent in <strong>descending</strong> order</li>
+            <li><strong>No Zero Coefficients:</strong> No term has a zero coefficient</li>
+            <li><strong>No Duplicate Exponents:</strong> Each exponent appears at most once</li>
+          </ul>
+        </div>
+      </section>
       
-      <h3>3. Memory Efficiency</h3>
-      <p>
-        The linked list structure avoids storing zero terms, and the recursive 
-        representation naturally handles sparse polynomials.
-      </p>
-    </div>
-    
-    <h2>Visual Representation</h2>
-    
-    <p>Here's how \( P(x, y) = x^2 + 3xy + y^2 \) is structured:</p>
-    
-    <div class="example-box">
-      <pre>PolyMV {
+      <section id="examples">
+        <h2>Examples</h2>
+        
+        <h3>Example 1: Simple Univariate Polynomial</h3>
+        
+        <p>Consider the polynomial \( P(x) = 3x^2 + 2x + 5 \):</p>
+        
+        <div class="example-box">
+          <p><strong>Representation:</strong></p>
+          <ul>
+            <li><code>Var = "x"</code></li>
+            <li><code>Head</code> points to a linked list:
+              <ul>
+                <li>Term 1: <code>Coeff = 3</code> (constant PolyMV), <code>Exp = 2</code></li>
+                <li>Term 2: <code>Coeff = 2</code> (constant PolyMV), <code>Exp = 1</code></li>
+              </ul>
+            </li>
+            <li><code>Const = nil</code> (non-constant polynomial)</li>
+          </ul>
+          <p><strong>Note:</strong> The constant term \( 5 \) would be stored in the last term's <code>Next</code> 
+          with <code>Exp = 0</code>, or handled specially depending on the implementation.</p>
+        </div>
+        
+        <h3>Example 2: Bivariate Polynomial</h3>
+        
+        <p>Consider \( P(x, y) = x^2 + 3xy + y^2 \):</p>
+        
+        <div class="math-display">
+          \[ P(x, y) = (1) \cdot x^2 + (3y) \cdot x^1 + (y^2) \cdot x^0 \]
+        </div>
+        
+        <div class="example-box">
+          <p><strong>Representation (viewed as polynomial in \( x \)):</strong></p>
+          <ul>
+            <li><code>Var = "x"</code></li>
+            <li><code>Head</code> contains:
+              <ul>
+                <li>Term 1: <code>Coeff = 1</code> (constant), <code>Exp = 2</code></li>
+                <li>Term 2: <code>Coeff = 3y</code> (PolyMV with <code>Var = "y"</code>), <code>Exp = 1</code></li>
+                <li>Term 3: <code>Coeff = y^2</code> (PolyMV with <code>Var = "y"</code>), <code>Exp = 0</code></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        
+        <h3>Example 3: Three Variables</h3>
+        
+        <p>Consider \( P(x, y, z) = x^2y + 3xz + 2yz \):</p>
+        
+        <div class="math-display">
+          \[ P(x, y, z) = (y) \cdot x^2 + (3z) \cdot x^1 + (2yz) \cdot x^0 \]
+        </div>
+        
+        <div class="example-box">
+          <p><strong>Representation (viewed as polynomial in \( x \)):</strong></p>
+          <ul>
+            <li><code>Var = "x"</code></li>
+            <li><code>Head</code> contains:
+              <ul>
+                <li>Term 1: <code>Coeff = y</code> (PolyMV: <code>Var = "y"</code>, <code>Head.Exp = 1</code>), <code>Exp = 2</code></li>
+                <li>Term 2: <code>Coeff = 3z</code> (PolyMV: <code>Var = "z"</code>, coefficient 3), <code>Exp = 1</code></li>
+                <li>Term 3: <code>Coeff = 2yz</code> (PolyMV in \( y \) and \( z \)), <code>Exp = 0</code></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </section>
+      
+      <section id="constructors">
+        <h2>Constructors</h2>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Function</th>
+              <th>Description</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>NewPolyZero()</code></td>
+              <td>Returns the canonical zero polynomial</td>
+              <td>\( 0 \)</td>
+            </tr>
+            <tr>
+              <td><code>NewPolyConst(r)</code></td>
+              <td>Creates a constant polynomial from a rational number</td>
+              <td>\( 5 \) or \( \frac{3}{2} \)</td>
+            </tr>
+            <tr>
+              <td><code>NewPolyVar(v)</code></td>
+              <td>Creates the polynomial \( v \) (i.e., \( 1 \cdot v^1 \))</td>
+              <td>\( x \)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      
+      <section id="recursive-nature">
+        <h2>Recursive Nature</h2>
+        
+        <p>
+          The power of <code>PolyMV</code> lies in its recursive structure. Each coefficient 
+          in a term is itself a <code>PolyMV</code>, which can be:
+        </p>
+        
+        <ul>
+          <li>A constant (rational number)</li>
+          <li>A polynomial in another variable</li>
+          <li>A polynomial in multiple variables (nested recursively)</li>
+        </ul>
+        
+        <div class="example-box">
+          <p><strong>Example: Nested Structure</strong></p>
+          <p>For \( P(x, y, z) = x^2(y^2 + z) + x(yz) + z^2 \):</p>
+          <ul>
+            <li>Main variable: <code>"x"</code></li>
+            <li>Term \( x^2 \): coefficient is \( y^2 + z \) (a PolyMV in \( y \) and \( z \))</li>
+            <li>Term \( x^1 \): coefficient is \( yz \) (a PolyMV in \( y \) and \( z \))</li>
+            <li>Term \( x^0 \): coefficient is \( z^2 \) (a PolyMV in \( z \))</li>
+          </ul>
+        </div>
+      </section>
+      
+      <section id="design">
+        <h2>Why This Design?</h2>
+        
+        <div class="card">
+          <h3>1. Canonical Form</h3>
+          <p>
+            The invariants ensure that every polynomial has a unique representation. 
+            This makes equality testing efficient and prevents redundant computations.
+          </p>
+          
+          <h3>2. Efficient Operations</h3>
+          <p>
+            The recursive structure allows algorithms to work on one variable at a time, 
+            reducing multivariate problems to univariate ones. For example:
+          </p>
+          <ul>
+            <li>Addition: Add coefficients term-by-term</li>
+            <li>Multiplication: Use the distributive law recursively</li>
+            <li>GCD: Use the Euclidean algorithm on the main variable</li>
+          </ul>
+          
+          <h3>3. Memory Efficiency</h3>
+          <p>
+            The linked list structure avoids storing zero terms, and the recursive 
+            representation naturally handles sparse polynomials.
+          </p>
+        </div>
+        
+        <h2>Visual Representation</h2>
+        
+        <p>Here's how \( P(x, y) = x^2 + 3xy + y^2 \) is structured:</p>
+        
+        <div class="example-box">
+          <pre>PolyMV {
     Var: "x"
     Head: → TermMV {
               Coeff: PolyMV { Const: 1 }     // Constant 1
@@ -530,88 +747,161 @@
                       }
             }
 }</pre>
-    </div>
-    
-    <h2>Key Operations</h2>
-    
-    <p>Common operations on <code>PolyMV</code> include:</p>
-    
-    <ul>
-      <li><code>Add(p, q)</code> - Polynomial addition</li>
-      <li><code>Mul(p, q)</code> - Polynomial multiplication</li>
-      <li><code>Sub(p, q)</code> - Polynomial subtraction</li>
-      <li><code>Degree()</code> - Degree in the main variable</li>
-      <li><code>LeadingCoeff()</code> - Leading coefficient (as a PolyMV)</li>
-      <li><code>IsZero()</code> - Check if polynomial is zero</li>
-      <li><code>IsConstant()</code> - Check if polynomial is constant</li>
-    </ul>
-    
-    <h2>Use in Symbolic Integration</h2>
-    
-    <p>
-      In the Bronstein-Laurent library, <code>PolyMV</code> is used as the foundation 
-      for representing:
-    </p>
-    
-    <ul>
-      <li><strong>Rational Functions:</strong> <code>RationalFunc</code> uses <code>PolyMV</code> 
-          for both numerator and denominator</li>
-      <li><strong>Polynomials over Fields:</strong> <code>PolyOverField</code> uses 
-          <code>RationalFunc</code> coefficients, which in turn use <code>PolyMV</code></li>
-      <li><strong>Integration Algorithms:</strong> The Risch algorithm manipulates these 
-          recursive structures to determine if integrals are elementary</li>
-    </ul>
-    
-    <div class="math-display">
-      \[ \text{RationalFunc} \rightarrow \frac{\text{PolyMV}}{\text{PolyMV}} \]
-    </div>
-    
-    <div class="math-display">
-      \[ \text{PolyOverField} \rightarrow \sum_{i} \frac{\text{PolyMV}_i}{\text{PolyMV}_i} \cdot t^i \]
-    </div>
-    
-    <h2>Summary</h2>
-    
-    <p>
-      <code>PolyMV</code> provides a clean, recursive representation of multivariate polynomials 
-      that enables efficient symbolic computation. Its canonical form ensures correctness, 
-      while its structure supports the complex algorithms needed for symbolic integration 
-      in the Risch algorithm framework.
-    </p>
-    
-    <hr>
-    
-    <div class="footer">
-      <p>This documentation is part of the Bronstein-Laurent symbolic integration project.</p>
-    </div>
-
+        </div>
+      </section>
+      
+      <section id="operations">
+        <h2>Key Operations</h2>
+        
+        <p>Common operations on <code>PolyMV</code> include:</p>
+        
+        <ul>
+          <li><code>Add(p, q)</code> - Polynomial addition</li>
+          <li><code>Mul(p, q)</code> - Polynomial multiplication</li>
+          <li><code>Sub(p, q)</code> - Polynomial subtraction</li>
+          <li><code>Degree()</code> - Degree in the main variable</li>
+          <li><code>LeadingCoeff()</code> - Leading coefficient (as a PolyMV)</li>
+          <li><code>IsZero()</code> - Check if polynomial is zero</li>
+          <li><code>IsConstant()</code> - Check if polynomial is constant</li>
+        </ul>
+      </section>
+      
+      <section id="integration">
+        <h2>Use in Symbolic Integration</h2>
+        
+        <p>
+          In the Bronstein-Laurent library, <code>PolyMV</code> is used as the foundation 
+          for representing:
+        </p>
+        
+        <ul>
+          <li><strong>Rational Functions:</strong> <code>RationalFunc</code> uses <code>PolyMV</code> 
+              for both numerator and denominator</li>
+          <li><strong>Polynomials over Fields:</strong> <code>PolyOverField</code> uses 
+              <code>RationalFunc</code> coefficients, which in turn use <code>PolyMV</code></li>
+          <li><strong>Integration Algorithms:</strong> The Risch algorithm manipulates these 
+              recursive structures to determine if integrals are elementary</li>
+        </ul>
+        
+        <div class="math-display">
+          \[ \text{RationalFunc} \rightarrow \frac{\text{PolyMV}}{\text{PolyMV}} \]
+        </div>
+        
+        <div class="math-display">
+          \[ \text{PolyOverField} \rightarrow \sum_{i} \frac{\text{PolyMV}_i}{\text{PolyMV}_i} \cdot t^i \]
+        </div>
+      </section>
+    </main>
   </div>
 
-  <script>
-    // Theme Toggling Logic
-    const themeBtn = document.getElementById('theme-btn');
-    const root = document.documentElement;
+  <footer class="main-footer">
+    <div class="footer-content">
+      <div class="footer-col">
+        <h4>About</h4>
+        <p style="font-size: 0.9em; color: var(--text-muted);">
+          PolyMV is part of the Bronstein-Laurent symbolic integration library, designed for high-performance algebraic computations in Go.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#" class="content-link">GitHub Repository</a></li>
+          <li><a href="#" class="content-link">API Reference</a></li>
+          <li><a href="#" class="content-link">Contributing Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Related Modules</h4>
+        <ul>
+          <li><a href="#" class="content-link">RationalFunc</a></li>
+          <li><a href="#" class="content-link">SparsePoly</a></li>
+          <li><a href="#" class="content-link">Risch Algorithm</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">
+      &copy; 2024 Bronstein-Laurent Project. Licensed under MIT.
+    </div>
+  </footer>
 
-    // Check for saved user preference, default to dark if nothing found
+  <script>
+    // --- Icons ---
+    lucide.createIcons();
+
+    // --- Theme Logic ---
+    const themeBtn = document.getElementById('theme-btn');
+    const themeText = document.getElementById('theme-text');
+    const root = document.documentElement;
     const savedTheme = localStorage.getItem('theme');
+
+    function updateThemeText(theme) {
+      themeText.textContent = theme === 'light' ? 'Switch to Dark' : 'Switch to Light';
+    }
     
     if (savedTheme === 'light') {
       root.setAttribute('data-theme', 'light');
+      updateThemeText('light');
     } else {
-      // Ensure dark is default by removing any potential light attribute
       root.removeAttribute('data-theme');
+      updateThemeText('dark');
     }
 
     themeBtn.addEventListener('click', () => {
-      if (root.getAttribute('data-theme') === 'light') {
+      const isLight = root.getAttribute('data-theme') === 'light';
+      if (isLight) {
         root.removeAttribute('data-theme');
         localStorage.setItem('theme', 'dark');
+        updateThemeText('dark');
       } else {
         root.setAttribute('data-theme', 'light');
         localStorage.setItem('theme', 'light');
+        updateThemeText('light');
       }
     });
+
+    // --- Mobile Menu Logic ---
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      
+      // Update icon based on state (optional visual polish)
+      const icon = sidebar.classList.contains('open') ? 'x' : 'menu';
+      // Re-render icon if needed or just toggle class
+    });
+
+    // Close sidebar when clicking a link on mobile
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+          sidebar.classList.remove('open');
+        }
+      });
+    });
+
+    // --- ScrollSpy / Active Link Highlighting ---
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${id}`) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, {
+      rootMargin: '-20% 0px -60% 0px' // Trigger when section is near top
+    });
+
+    sections.forEach(section => observer.observe(section));
   </script>
 </body>
 </html>
-```
